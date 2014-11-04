@@ -1,0 +1,3 @@
+[24-Oct-2014 15:58:34 Europe/Berlin] PHP Fatal error:  Class 'Hash' not found in /home/csdmelec/public_html/lib/Cake/Core/Configure.php on line 159
+[24-Oct-2014 16:06:24 Europe/Berlin] PHP Fatal error:  Class 'View' not found in /home/csdmelec/public_html/lib/Cake/Controller/Controller.php on line 1241
+[24-Oct-2014 16:06:24 Europe/Berlin] PHP Fatal error:  Class 'View' not found in /home/csdmelec/public_html/lib/Cake/Controller/Controller.php on line 1241
