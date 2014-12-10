@@ -4,14 +4,22 @@ App::uses('BaseAuthenticate', 'Controller/Component/Auth');
 class CustomAuthenticate extends BaseAuthenticate {
 	
 	protected $_passwordHasher;
+	protected $usrModel;
 	
     public function authenticate(CakeRequest $request, CakeResponse $response) {
-        return $this->_findUser($request->data[$this->settings['userModel']][$this->settings['fields']['username']],
-        $request->data[$this->settings['userModel']][$this->settings['fields']['password']]);
+    	$models = array('Staff', 'Student');
+		$fields = array('staffID', 'matric');
+		for ( $i = 0 ; $i < 2 ; $i++ ) {
+			$this->settings['fields']['username'] = $fields[$i];
+			$this->usrModel = $models[$i];
+			if ( $usr = $this->_findUser($request->data['User']['username'], $request->data['User']['password']) ) {
+				return $usr;
+			}
+		}
     }
 	
 	protected function _findUser($username, $password = null) {
-		$userModel = $this->settings['userModel'];
+		$userModel = $this->usrModel;//$this->settings['userModel'];
 		list(, $model) = pluginSplit($userModel);
 		$fields = $this->settings['fields'];
 
@@ -39,8 +47,9 @@ class CustomAuthenticate extends BaseAuthenticate {
 
 		$user = $result[$model];
 		if ($password !== null) {
-			if (!$this->passwordHasher()->check($password . $user['salt'], $user[$fields['password']])) {
+			if (!$this->passwordHasher()->check($password, $user[$fields['password']])) {
 				return false;
+				
 			}
 			unset($user[$fields['password']]);
 		}

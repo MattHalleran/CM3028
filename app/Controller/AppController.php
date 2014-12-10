@@ -32,9 +32,9 @@ App::uses('Controller', 'Controller');
  */
 class AppController extends Controller {
 	// Load models
-	var $uses = array('Student','Staff');
+	var $uses = array('Student','Staff','Choice', 'SysVar');
 	// Load components
-	public $components = array('Security','Cookie','Session','Auth','RequestHandler');
+	public $components = array('Cookie','Session','Auth','RequestHandler');
     // Load helpers
     public $helpers = array('Cache','Html','Session','Form');
 	
@@ -44,56 +44,21 @@ class AppController extends Controller {
 	}
 
     function beforeFilter() {
+    	//debug($this->request);
     	// Authorisation setup
-		if ( strtolower($this->request->controller) == 'staff' ) {
-			$this->Auth->loginAction = array('controller' => 'Staff', 'action' => 'login');
-			$this->Auth->loginRedirect = array('controller' => 'Staff', 'action' => 'index');
-			$this->Auth->logoutRedirect = '/';
-			$this->Auth->authError = "Not allowed! Staff";
-			$this->Auth->authenticate = array (
-	        	'Custom' => array(
-	        		'passwordHasher' => array(
-						'className' => 'Custom'
-					),
-	        		'userModel' => 'Staff',
-	        		'fields' => array(
-						'username' => 'staffID',
-						'password' => 'password'
-					),
-				)
-			);
-			$this->Auth->allow('login');
-		} else {
-			$this->Auth->autoRedirect = false;
-			$this->Auth->loginAction = array('controller' => 'Students', 'action' => 'login');
-			$this->Auth->loginRedirect = array('controller' => 'Students', 'action' => 'index');
-			$this->Auth->logoutRedirect = '/';
-			$this->Auth->authError = "Not allowed! User";
-			$this->Auth->authenticate = array (
-	        	'Custom' => array(
-	        		'passwordHasher' => array(
-						'className' => 'Custom'
-					),
-	        		'userModel' => 'Student',
-	        		'fields' => array(
-						'username' => 'matric',
-						'password' => 'password'
-					),
-				)
-			);
-			$this->Auth->allow('login');
-		}
-		// ------
+		$this->Auth->loginAction = array('controller' => 'Users', 'action' => 'login');
+		$this->Auth->logoutRedirect = '/';
+		$this->Auth->authError = "Not allowed! Staff";
+		$this->Auth->authorize = array("Controller");
+		$this->Auth->unauthorizedRedirect = array('controller' => 'Staffs' , 'action' => 'index');
 		
-		//Test 
-		//$this->Student->matric = $this->Auth->user('matric');
-    	//$this->Staff->staffID = $this->Auth->user('staffID');	
-    	//$this->Staff->getStaff();
-		//debug($this->Student->getStudent());
-		if ($matric = $this->Auth->user()) {
-			//debug($matric);
-		}
-		// ----
-    }
-	
+		$this->Auth->authenticate = array (
+        	'Custom' => array(
+        		'passwordHasher' => array(
+					'className' => 'Blowfish'
+				)
+			)
+		);
+    }	
 }
+?>

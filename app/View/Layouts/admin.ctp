@@ -14,51 +14,68 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-$cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
-$cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 ?>
 <!DOCTYPE html>
-<html>
+<meta charset="utf-8">
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<?php echo $this->Html->charset(); ?>
 	<title>
-		<?php echo $cakeDescription ?>:
-		<?php echo $this->fetch('title'); ?>
+		RGU Elective Portal
 	</title>
 	<?php
 		echo $this->Html->meta('icon');
 
-		echo $this->Html->css('cake.generic');
+		echo $this->Html->css('vendor/bootstrap.min');
+		echo $this->Html->css('flat-ui-pro');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
 		echo $this->fetch('script');
 	?>
+	<style>
+		.alert {
+			position:relative;
+			top:60px;
+		}
+		table.electives tr.trigger:hover {
+			background: #eee;
+		}
+		table.electives tr.expand:hover {
+			background: #efefef;
+		}
+		
+		
+		table.electives tr.expand{
+			cursor:default;
+		    background-color: #efefef;
+		}
+		.vote-time input:not(.btn){
+			background:none;
+			outline:none;
+			border:none;
+		}
+		.vote-time input[type='submit'] {
+			margin-left: 10px;
+		}
+		.vote-time h4 {
+			display:inline-block;
+		}
+	</style>
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="js/vendor/html5shiv.js"></script>
+  <script src="js/vendor/respond.min.js"></script>
+  <![endif]-->
 </head>
 <body>
-	<div id="container">
-		<div id="header">
-			<h1>Admin page</h1>
-		</div>
-		<?php echo $this->element('userInfo'); ?>
-		<div id="content">
-
+	<?php echo $this->element('userInfo'); ?>
+	<div class="container">
 			<?php echo $this->Session->flash(); ?>
-
 			<?php echo $this->fetch('content'); ?>
-		</div>
-		<div id="footer">
-			<?php /*echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt' => $cakeDescription, 'border' => '0')),
-					'http://www.cakephp.org/',
-					array('target' => '_blank', 'escape' => false, 'id' => 'cake-powered')
-				);*/
-			?>
-			<p>
-				<?php //echo $cakeVersion; ?>
-			</p>
-		</div>
 	</div>
+	
 	<?php echo $this->element('sql_dump'); ?>
 </body>
 </html>
