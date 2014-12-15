@@ -3,10 +3,15 @@
 			<h3 class="panel-title">Welcome <?php echo AuthComponent::user('firstname');?></h3>
   		</div>
   		<div class="panel-body">
-			<div>Voting starts at <small><?php echo $vote_details[0]['SysVar']['meta_value'];?></small>, ends at <small><?php echo $vote_details[1]['SysVar']['meta_value'];?></small></div>
+  		<?php if( !$inVoting ):?>
+			<div>Voting period starts at <small><?php echo $vote_details[0]['SysVar']['meta_value'];?></small>, ends at <small><?php echo $vote_details[1]['SysVar']['meta_value'];?></small></div>
+		<?php else:?>
+			<div>Voting period has already started</div>
+		<?php endif;?>
 			<button type="button" data-title="Edit my account" data-toggle='modal' data-ajax="<?php echo $this->Html->url(array('controller' => 'Students', 'action' => 'edit'));?>" data-target="#ajaxModal" class="btn btn-primary">Edit my details</button>
  	</div>
 </div>
+<?php if ( $inVoting ) :?>
 <div class="col-lg-12 ptm">
   <div class="table-responsive">
   	<?php echo ($inVoting)?$this->Form->create('Choice',array(
@@ -63,6 +68,7 @@
 	)):"";?>
   </div>
     </div>
+<?php endif;?>
     <!-- Modal -->
 <div class="modal fade" id="ajaxModal" tabindex="-1" role="dialog" aria-labelledby="ajaxModalLabel" aria-hidden="true">
   <div class="modal-dialog">

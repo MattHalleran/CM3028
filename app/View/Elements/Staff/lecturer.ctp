@@ -1,4 +1,5 @@
 <div class="table-responsive ptq">
+	<button data-title='Update my account' data-toggle='modal' data-ajax='<?php echo $this->Html->url(array('controller' => 'Staffs', 'action' => 'edit'));?>' data-target='#ajaxModal' type='button' class='btn btn-primary btn-sm'>Update my account</button>
     <h4>My Modules</h4>
     <table id="electives" class="table electives">
       <th>Module Code</th><th>Module Name</th><th>Decription</th><th></th>

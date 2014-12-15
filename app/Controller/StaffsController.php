@@ -123,9 +123,14 @@ class StaffsController extends AppController {
 			$this->layout = "admin";
 		}
 		// redirect user to create staff member action in case there is no ID defined
-		if ( empty($this->request->data) && !$id ) {
+		/*if ( empty($this->request->data) && !$id ) {
 			$this->Session->setFlash(__('You must select a user to update'),'flash_bad');
 			$this->redirect(array('controller' => 'Staffs' , 'action' => 'create'));
+		}*/
+		$lecturerCourses = explode(",",$this->Auth->user('courses'));
+		$currentUser = $this->Auth->user();
+		if ( isset($currentUser['courses']) && !in_array("ADM", $lecturerCourses) ) {
+			$id = $currentUser['staffID'];
 		}
 		// if post data found or ID for editing is set
 		if ($this->request->is('post') || $id) { // 
@@ -220,7 +225,7 @@ class StaffsController extends AppController {
 			return true;
 		}
 		// otherwise disable access
-		if ( in_array($this->action, array('create', 'delete', 'edit')) ) {
+		if ( in_array($this->action, array('create', 'delete')) ) {
 			$this->Session->setFlash(__('Youre not allowed to see this'),'flash_bad');
 			return false;
 		}
@@ -238,7 +243,7 @@ class StaffsController extends AppController {
 			if ( in_array('ADM', $courses) ) { // if it's admin
 				$this->Auth->allow(); // allow all actions
 			} else { // otherwise deny all actions
-				$this->Auth->deny(array('create', 'edit','delete'));
+				$this->Auth->deny(array('create','delete'));
 			}
 		} else { // unauthorized user
 			$this->Auth->deny(); // deny all actions
