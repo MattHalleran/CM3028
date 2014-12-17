@@ -1,4 +1,11 @@
-<?php //debug($staffMembers);?>
+<?php
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+* Description: Lecturer panel
+*/
+?>
 <?php $vars = $this->Html->url(array('controller' => 'SysVars', 'action' => 'edit'));?>
 <script>
 	var sysvars = '<?php echo $vars;?>';
