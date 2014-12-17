@@ -44,7 +44,6 @@ class AppController extends Controller {
 	}
 
     function beforeFilter() {
-    	//debug($this->request);
     	// Authorisation setup
 		$this->Auth->loginAction = array('controller' => 'Users', 'action' => 'login');
 		$this->Auth->logoutRedirect = '/';
