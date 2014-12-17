@@ -1,4 +1,9 @@
 <?php
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+*/
 App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
 class Staff extends AppModel {
 	var $name = "Staff";
@@ -12,7 +17,9 @@ class Staff extends AppModel {
 		)
 	);
 	
-	
+	/*
+	* fetches single staff member by staff member ID
+	*/
 	public function getStaff($id = null) {
 		if ( !$id ) {
 			$id = $this->staffID;
@@ -24,6 +31,10 @@ class Staff extends AppModel {
 		));
 	}
 	
+	/*
+	* Fetches all staff members into array
+	* This method is for populating <select> tag.
+	*/
 	public function getStaffMembers() {
 		$staffs = $this->find('all', array(
 			'fields' => array(
@@ -38,12 +49,9 @@ class Staff extends AppModel {
 		return $new;
 	}
 	
-	// for creating test user
-	public function hashPwd( $pwd ) {
-		$passwordHasher = new BlowfishPasswordHasher();
-		return $passwordHasher->hash($pwd);
-	}
-	
+	/*
+	* Check whether staff member exists
+	*/
 	public function staffExists( $id ) {
 		return $this->find('first', array(
 			'conditions' => array(
@@ -52,11 +60,15 @@ class Staff extends AppModel {
 		));
 	}
 	
+	/*
+	* Method bellow will be executed before every Model->save(); function call
+	*/
 	public function beforeSave($options = array()) {
 		if ( !$this->staffID ) {
 			$passwordHasher = new BlowfishPasswordHasher();
 			$this->data[$this->alias]['password'] = $passwordHasher->hash($this->data[$this->alias]['password']);
 		}
+		// Code block bellow converts array of courses into string.
 		$courses = $this->data[$this->alias]['courses'];
 		$coursesStr = "";
 		if ( $courses != '' ) {
