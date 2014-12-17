@@ -1,4 +1,9 @@
-<!-- app/View/Users/add.ctp -->
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+* Description: Create new staff member view
+*/
 <div class="users form">
 <?php if ( !$this->request->is('ajax') ): ?>
 <?php echo $this->Form->create('Staff', array('action' => 'edit')); ?>
