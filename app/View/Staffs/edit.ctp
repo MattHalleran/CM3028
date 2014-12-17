@@ -1,3 +1,11 @@
+<?php
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+* Description: This view file displays staff account editting form
+*/
+?>
 <div class="users form">
 	
 <?php
