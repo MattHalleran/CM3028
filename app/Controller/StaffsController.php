@@ -15,107 +15,110 @@ class StaffsController extends AppController {
     public function index() {
     	// fetch vote start/end dates
     	$start_date = $this->SysVar->getParam('START_DATE');
-		$end_date = $this->SysVar->getParam('END_DATE');
-		$voting = $this->Validations->inVoting($start_date['SysVar']['meta_value'],$end_date['SysVar']['meta_value']);
-			// set a view variable
-		$this->set('inVoting', $voting);
-		$this->set('vote_details', array($start_date,$end_date));
-		//
-		// fetch role
+	$end_date = $this->SysVar->getParam('END_DATE');
+	// Check if voting period has started
+	$voting = $this->Validations->inVoting($start_date['SysVar']['meta_value'],$end_date['SysVar']['meta_value']);
+	// send data to view
+	$this->set('inVoting', $voting);
+	$this->set('vote_details', array($start_date,$end_date));
+	//
+	// fetch role
     	$role = $this->Auth->user('courses');
-		$courses = explode(',',$role);
+	$courses = explode(',',$role);
+	
+	// if loged in as aministrator
+	if ( in_array('ADM', $courses) ) {
+		// send role variable to View
+		$this->set('role', 'ADM');
+		// fetch all electives modules
+		$electives = $this->Elective->find('all', array(
+			'order' => array(
+				'Elective.code ASC'
+			)
+		));
+		// fetch all staff members
+		// set recursive to -1 to exclude lecturers elective modules etc.
+		$this->Staff->recursive = -1;
+		$this->set('staffMembers', $this->Staff->find('all'));
+		// fetch all students along with their choices
+		$sortedStudents = $this->Student->find('all', array(
+			'order' => array(
+				'Student.firstname'
+			),
+			'fields' => array(
+				'Student.matric',
+				'Student.firstname',
+				'Student.surname',
+				'Choice.choices',
+				'Course.name'
+			)
+		));
+		// modify student array
+		// Counts how many electives student has already chosen
+		foreach( $sortedStudents as &$student ) {
+			$student['Choice']['choices'] = ($student['Choice']['choices'] != "")? count(explode(',',$student['Choice']['choices'])): 0;
+		}
+		// sort student array by rank. lowest first
+		$sortedStudents = Hash::sort($sortedStudents, '{n}.Choice.choices', 'asc');
+		$this->set('students', $sortedStudents);
 		
-		// if loged in as aministrator
-		if ( in_array('ADM', $courses) ) {
-			$this->set('role', 'ADM');
-			// fetch all electives modules
-			$electives = $this->Elective->find('all', array(
-				'order' => array(
-					'Elective.code ASC'
-				)
-			));
-			// fetch all staff members
-			$this->Staff->recursive = -1;
-			$this->set('staffMembers', $this->Staff->find('all'));
-			// fetch all students
-			$sortedStudents = $this->Student->find('all', array(
-				'order' => array(
-					'Student.firstname'
-				),
+		// fetch course list sorted by name
+		$courseList = $this->Course->find('all', array(
+			'order' => array('name')
+		));
+		// modify course array
+		$courses = array();
+		foreach ( $courseList as &$course ){
+			$courses[$course['Course']['code']] = $course['Course']['name'];
+		}
+		// Send course list to view
+		$this->set('courseList', $courses);
+		
+	} else { // Viewing as a lecturer
+		// fetch modules
+		$electives = $this->Elective->findAllByLecturer($this->Auth->user('staffID'));
+		// set role
+		$this->set('role', 'LEC');
+	}
+	// send modules to view
+	$this->set('modules', $electives);
+	
+	if ( $voting ) { // Voting has already started
+		// Generate elective module list along with student list who chose particular module
+		$student_list = array();
+		foreach( $electives as &$module) { // loop through all modules lecturer created
+			// fetch all students who chose current module
+			$student_choices = $this->Student->find('all', array(
 				'fields' => array(
 					'Student.matric',
 					'Student.firstname',
 					'Student.surname',
 					'Choice.choices',
 					'Course.name'
+				),
+				'conditions' => array(
+					'Choice.id !=' => null,
+					'Choice.choices LIKE' => '%' . $module['Elective']['code'] . '%' 
 				)
 			));
-			// modify student array
-			foreach( $sortedStudents as &$student ) {
-				$student['Choice']['choices'] = ($student['Choice']['choices'] != "")? count(explode(',',$student['Choice']['choices'])): 0;
+			foreach ( $student_choices as &$student ) { // loop through all students
+				$choices = explode(',',$student['Choice']['choices']); // convert chosen modules into array
+				$student_list[$module['Elective']['code']][] = array(
+					'name' => $student['Student']['firstname'] . ' ' . $student['Student']['surname'],
+					'matric' => $student['Student']['matric'],
+					'course' => $student['Course']['name'],
+					'rank' => count($choices) - array_search($module['Elective']['code'], $choices) // Generates module rank
+ 				);
 			}
-			// sort student array by rank. lowest first
-			$sortedStudents = Hash::sort($sortedStudents, '{n}.Choice.choices', 'asc');
-			$this->set('students', $sortedStudents);
-			
-			// fetch course list
-			$courseList = $this->Course->find('all', array(
-				'order' => array('name')
-			));
-			// modify course array
-			$courses = array();
-			foreach ( $courseList as &$course ){
-				$courses[$course['Course']['code']] = $course['Course']['name'];
+			if( isset($student_list[$module['Elective']['code']]) ) { // check there are any students who chose this module
+				// Sort student list by rank. high to low
+				$student_list[$module['Elective']['code']] = Hash::sort($student_list[$module['Elective']['code']], '{n}.rank', 'desc');
 			}
-			
-			$this->set('courseList', $courses);
-			
-		} else { // Viewing as a lecturer
-			// fetch modules
-			$electives = $this->Elective->findAllByLecturer($this->Auth->user('staffID'));
-			// set role
-			$this->set('role', 'LEC');
 		}
-		// set modules variable
-		$this->set('modules', $electives);
-		
-		if ( $voting ) { // Voting has already started
-		
-			// Generate elective module list along with student list who chose particular module
-			$student_list = array();
-			foreach( $electives as &$module) { // loop through all modules lecturer created
-				// fetch all students who chose current module
-				$student_choices = $this->Student->find('all', array(
-					'fields' => array(
-						'Student.matric',
-						'Student.firstname',
-						'Student.surname',
-						'Choice.choices',
-						'Course.name'
-					),
-					'conditions' => array(
-						'Choice.id !=' => null,
-						'Choice.choices LIKE' => '%' . $module['Elective']['code'] . '%' 
-					)
-				));
-				foreach ( $student_choices as &$student ) { // loop through all students
-					$choices = explode(',',$student['Choice']['choices']); // convert chosen modules into array
-					$student_list[$module['Elective']['code']][] = array(
-						'name' => $student['Student']['firstname'] . ' ' . $student['Student']['surname'],
-						'matric' => $student['Student']['matric'],
-						'course' => $student['Course']['name'],
-						'rank' => count($choices) - array_search($module['Elective']['code'], $choices) // Generates module rank
- 					);
-				}
-				if( isset($student_list[$module['Elective']['code']]) ) { // check there are any students who chose this module
-					// Sort student list by rank. high to low
-					$student_list[$module['Elective']['code']] = Hash::sort($student_list[$module['Elective']['code']], '{n}.rank', 'desc');
-				}
-			}
-			// set module-student list variable
-			$this->set('student_list',$student_list);
-		}
-		// define page layout
+		// set module-student list variable
+		$this->set('student_list',$student_list);
+	}
+	// define page layout
     	$this->layout = 'admin';
     }
 	
@@ -128,11 +131,9 @@ class StaffsController extends AppController {
 			$this->layout = "admin";
 		}
 		// redirect user to create staff member action in case there is no ID defined
-		/*if ( empty($this->request->data) && !$id ) {
-			$this->Session->setFlash(__('You must select a user to update'),'flash_bad');
-			$this->redirect(array('controller' => 'Staffs' , 'action' => 'create'));
-		}*/
 		$lecturerCourses = explode(",",$this->Auth->user('courses'));
+		// If lecturer is trying to access edit action
+		// application allows to edit his account only
 		$currentUser = $this->Auth->user();
 		if ( isset($currentUser['courses']) && !in_array("ADM", $lecturerCourses) ) {
 			$id = $currentUser['staffID'];
@@ -162,7 +163,7 @@ class StaffsController extends AppController {
 				$courses = $this->Course->fetchCourses();
 				$cours = explode(',', @$staff['Staff']['courses']);
 				$selected;
-				// generate array of courses lecturer has already created
+				// generate array of courses lecturer where lecturer belongs to.
 				foreach( $courses as $key => $val ) {
 					for ( $i = 0 ; $i < count($cours) ; $i++ ) {
 						if ( $key == $cours[$i] ) {
@@ -214,6 +215,7 @@ class StaffsController extends AppController {
 				$this->Session->setFlash(__('Don\'t forget first name and surname'),'flash_bad');
 			}
 		}
+		// Send data to view 
 		$this->set('staff', $this->Staff->getStaffMembers());
 		$courses = $this->Course->fetchCourses();
 		$this->set('courses', $courses);
