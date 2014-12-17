@@ -1,3 +1,11 @@
+<?php
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+* Description: Lecturer panel
+*/
+?>
 <div class="table-responsive ptq">
 	<button data-title='Update my account' data-toggle='modal' data-ajax='<?php echo $this->Html->url(array('controller' => 'Staffs', 'action' => 'edit'));?>' data-target='#ajaxModal' type='button' class='btn btn-primary btn-sm'>Update my account</button>
     <h4>My Modules</h4>
@@ -5,7 +13,7 @@
       <th>Module Code</th><th>Module Name</th><th>Decription</th><th></th>
       <?php 
       $i = 1;
-	  //debug($modules);
+      // Display all modules owned by current lecturer
       foreach( $modules as &$module ): ?>
       <tr <?php echo( isset($student_list[$module['Elective']['code']]) )? "style='cursor:pointer;'" : "" ?> data-parent="#electives" class="trigger collapsed" data-toggle="collapse" data-target="#expand-<?php echo $i;?>" aria-expanded="<?php echo (($i == 1) ? "true":"false");?>" aria-controls="expand-<?php echo $i;?>">
         <td><?php echo $module['Elective']['code'];?></td>
@@ -22,12 +30,16 @@
           </div>
         </td>
       </tr>		
-	  <?php if( isset($student_list[$module['Elective']['code']]) ) :?>
+	  <?php
+	  // Check if there are any students who chose this module
+	  if( isset($student_list[$module['Elective']['code']]) ) :?>
 	  <tr id="expand-<?php echo $i;?>" class="expand collapse out">
       	<td colspan="4">
 	    	<table class="table students">
 	      		<th>Matric</th><th>Student name</th><th>Host course</th><th>Ranking value</th>
-	      	<?php foreach($student_list[$module['Elective']['code']] as &$student):?>
+	      	<?php
+	      	// Display student list who chose this module
+	      	foreach($student_list[$module['Elective']['code']] as &$student):?>
 		      		<tr>
 		      			<td><?php echo $student['matric'];?></td>
 		      			<td><?php echo $student['name'];?></td>
@@ -44,6 +56,7 @@
       endforeach;?>
     </table>
 <?php 
+// Toggle add new module button
 if ( !$inVoting ) {
 	echo "<button data-title='Create new elective module' data-toggle='modal' data-ajax='" . $this->Html->url(array('controller' => 'Electives', 'action' => 'offer')). "' data-target='#ajaxModal' type='button' class='btn btn-primary btn-sm'>Add module</button>";
 }
