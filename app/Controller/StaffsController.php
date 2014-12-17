@@ -1,4 +1,9 @@
 <?php
+/*
+* Author: Haroldas Latonas
+* Matric: 1205950
+* Date:   17 Dec 2014
+*/
 App::uses('AppController', 'Controller');
 App::uses('CustomPasswordHasher','CustomAuthentication', 'Controller/Component/Auth');
 class StaffsController extends AppController {
