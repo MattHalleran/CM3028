@@ -42,7 +42,6 @@ class Staff extends AppModel {
 			)
 		));
 		$new;
-		// Format for option input
 		foreach ($staffs as $key => $value) {
 			$new[$staffs[$key]['Staff']['staffID']] = $staffs[$key]['Staff']['firstname'] . ' ' . $staffs[$key]['Staff']['lastname'];
 		}
